@@ -6,6 +6,8 @@ const { interface, bytecode } = require('../compile');
 
 let lottery, accounts;
 
+const log = (content) => console.log(content);
+
 beforeEach(async () => {
   accounts = await web3.eth.getAccounts();
 
@@ -82,7 +84,15 @@ describe('Lottery Contract', () => {
       value: web3.utils.toWei('2', 'ether') // eth => wei conversion
     });
 
-    const initialBalance = await web3.eth.getBalance();
+    const initialBalance = await web3.eth.getBalance(accounts[ 0 ]);
 
+    await lottery.methods.pickWinner().send({ from: accounts[ 0 ] });
+
+    const finalBalance = await web3.eth.getBalance(accounts[ 0 ]);
+    const difference = finalBalance - initialBalance;
+
+    // Accomodating for the gas difference 
+    log(`difference: ${difference}`)
+    assert(difference > web3.utils.toWei('1.8', 'ether'));
   });
 });
