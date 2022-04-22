@@ -1,6 +1,7 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const Web3 = require('web3');
 const { interface, bytecode } = require('./compile');
+const fs = require('fs')
 require('dotenv').config();
 
 // Building Provider to Rinkeby Test Network 
@@ -22,8 +23,23 @@ const deploy = async () => {
     .deploy({ data: bytecode })
     .send({ gas: '1000000', from: accounts[ 0 ] });
 
+  log(interface);
   log('Contract deployed to', result.options);
   log(result.options.address)
+
+  // Saving ABI for FE
+  const deployedContract = JSON.stringify({
+    interface,
+    address : result.options.address,
+    lastUpdate : new Date()
+  })
+
+  fs.writeFile('./lottery-react/src/ABI.json', deployedContract, (err) => {
+    if (err) {
+        throw err;
+    }
+    console.log("Contract information is saved!");
+  })
 };
 
 deploy().catch(err => log(err))
